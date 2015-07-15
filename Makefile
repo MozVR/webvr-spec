@@ -1,3 +1,4 @@
+.PHONY: webvr.html
 
 all: webvr.html
 
