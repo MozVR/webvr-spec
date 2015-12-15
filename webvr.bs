@@ -24,14 +24,14 @@ to VR hardware to allow developers to build compelling, comfortable VR experienc
 At this time there are two defined variants of VRDevice, each of which is intended to describe a specific capability of a piece of hardware
 rather than all aspects of that hardware. For example, a Dedicated Head-Mounted Display such as an Oculus Rift will be exposed as two VRDevices:
 An HMDVRDevice that describes the optical properties of the device, including Field of View and Interpupillary Distance, and a
-PositionSensorVRDevice, which describes the HMD's position and orientation in space.
+PoseSensorVRDevice, which describes the HMD's position and orientation in space.
 
-A PositionSensorVRDevice could also be provided without a corresponding HMDVRDevice to represent a piece of hardware that tracks position
+A PoseSensorVRDevice could also be provided without a corresponding HMDVRDevice to represent a piece of hardware that tracks position
 but does not have a display, such as a Six-degrees-of-freedom controller.
 
 Further, mobile devices that expose their orientation and motion data can be used in conjunction with headsets as Non-Dedicated Head-Mounted Displays.
-In this case, the mobile device would constitute the PositionSensorVRDevice. However, the diversity of headset optics complicates the implementation
-of the HMDVRDevice interface. Like the PositionSensorVRDevice, it needs to support provisions independent of an HMDVRDevice. 
+In this case, the mobile device would constitute the PoseSensorVRDevice. However, the diversity of headset optics complicates the implementation
+of the HMDVRDevice interface. Like the PoseSensorVRDevice, it needs to support provisions independent of an HMDVRDevice. 
 
 Additional VRDevice types may be added over time to expose new hardware types or features as they becomes available to consumers.
 Eye tracking is an example of a potential future interface.
@@ -115,12 +115,12 @@ function fieldOfViewToProjectionMatrix(fov, zNear, zFar) {
 </pre>
 </div>
 
-## VRPositionState
+## VRPoseState
 
-The {{VRPositionState}} interface represents a sensor's state at a given timestamp.
+The {{VRPoseState}} interface represents a sensor's state at a given timestamp.
 
 <pre class="idl">
-interface VRPositionState {
+interface VRPoseState {
   readonly attribute double timeStamp;
 
   readonly attribute boolean hasPosition;
@@ -136,18 +136,18 @@ interface VRPositionState {
 };
 </pre>
 
-### Attributes ### {#vrpositionstateattributes}
+### Attributes ### {#vrposestateattributes}
 
-<dfn attribute for=VRPositionState>timeStamp</dfn>
+<dfn attribute for=VRPoseState>timeStamp</dfn>
 Monotonically increasing value that allows the author to determine if position
 state data been updated from the hardware. Since values are monotonically
 increasing they can be compared to determine the ordering of updates, as newer
 values will always be greater than or equal to older values.
 
-<dfn attribute for=VRPositionState>hasPosition</dfn>
+<dfn attribute for=VRPoseState>hasPosition</dfn>
 True if the {{position}} attribute is valid. If false, {{position}} MUST be null.
 
-<dfn attribute for=VRPositionState>position</dfn>
+<dfn attribute for=VRPoseState>position</dfn>
 Position of the sensor at {{timeStamp}} as a 3D vector. Position is given in
 meters from an origin point, which is either the position the sensor was first
 read at or the position of the sensor at the point that resetSensor was last
@@ -160,19 +160,19 @@ called. The coordinate system uses these axis definitions:
 All positions are given relative to the identity orientation. The w component
 MUST be 0. May be null if the sensor is incapable of providing positional data.
 
-<dfn attribute for=VRPositionState>linearVelocity</dfn>
+<dfn attribute for=VRPoseState>linearVelocity</dfn>
 Linear velocity of the sensor at {{timeStamp}}. The w component MUST be 0.
 May be null if the sensor is incapable of providing linear velocity.
 
-<dfn attribute for=VRPositionState>linearAcceleration</dfn>
+<dfn attribute for=VRPoseState>linearAcceleration</dfn>
 Linear acceleration of the sensor at {{timeStamp}}. The w component MUST be 0.
 May be null if the sensor is incapable of providing linear acceleration.
 
-<dfn attribute for=VRPositionState>hasOrientation</dfn>
+<dfn attribute for=VRPoseState>hasOrientation</dfn>
 True if the {{orientation}} attribute is valid. If false, {{orientation}} MUST be
 null.
 
-<dfn attribute for=VRPositionState>orientation</dfn>
+<dfn attribute for=VRPoseState>orientation</dfn>
 Orientation of the sensor at {{timeStamp}} as a quaternion. The orientation yaw
 (rotation around the Y axis) is relative to the initial yaw of the sensor when
 it was first read or the yaw of the sensor at the point that resetSensor was
@@ -180,11 +180,11 @@ last called. An orientation of {x: 0, y: 0, z: 0, w: 1} is considered to be
 "forward". May be null if the sensor is incapable of providing
 orientation data.
 
-<dfn attribute for=VRPositionState>angularVelocity</dfn>
+<dfn attribute for=VRPoseState>angularVelocity</dfn>
 Angular velocity of the sensor at {{timeStamp}}. The w component MUST be 0.
 May be null if the sensor is incapable of providing angular velocity.
 
-<dfn attribute for=VRPositionState>angularAcceleration</dfn>
+<dfn attribute for=VRPoseState>angularAcceleration</dfn>
 Angular acceleration of the sensor at {{timeStamp}}. The w component MUST be 0.
 May be null if the sensor is incapable of providing angular acceleration.
 
@@ -313,27 +313,27 @@ eye will be used. If the field of view values for an eye exceed the
 {{minimumFieldOfView}} or {{maximumFieldOfView}} values for the same eye, then the
 values will be clamped to the valid range.
 
-## PositionSensorVRDevice
+## PoseSensorVRDevice
 
-The {{PositionSensorVRDevice}} interface represents a {{VRDevice}} for a sensor that can report position and/or orientation.
+The {{PoseSensorVRDevice}} interface represents a {{VRDevice}} for a sensor that can report position and/or orientation.
 
 <pre class="idl">
-interface PositionSensorVRDevice : VRDevice {
-  VRPositionState getState();
-  VRPositionState getImmediateState();
+interface PoseSensorVRDevice : VRDevice {
+  VRPoseState getState();
+  VRPoseState getImmediateState();
   void resetSensor();
 };
 </pre>
 
-### Methods ### {#positionsensorvrdevicemethods}
+### Methods ### {#posesensorvrdevicemethods}
 
 <dfn method for=HMDVRDevice>getState()</dfn>
-Return a {{VRPositionState}} dictionary containing the state of this position
+Return a {{VRPoseState}} dictionary containing the state of this position
 sensor state for the current frame (if within a requestAnimationFrame context)
 or for the previous frame. This state may be predicted based on the
 implementation's frame scheduling.
 
-The VRPositionState will contain the position, orientation, and velocity and
+The VRPoseState will contain the position, orientation, and velocity and
 acceleration of each of these properties. Use {{hasPosition}} and
 {{hasOrientation}} to check if the associated members are valid;
 If these are false, those members MUST be null.
@@ -362,10 +362,10 @@ Applications should iterate over the list and correlate devices that share
 
 <div class="example">
 The following code finds the first available {{HMDVRDevice}} and its
-associated {{PositionSensorVRDevice}}, if it has one.
+associated {{PoseSensorVRDevice}}, if it has one.
 
 <pre>
-var gHMD, gPositionSensor;
+var gHMD, gPoseSensor;
 
 navigator.getVRDevices().then(function(devices) {
   for (var i = 0; i < devices.length; ++i) {
@@ -377,9 +377,9 @@ navigator.getVRDevices().then(function(devices) {
 
   if (gHMD) {
     for (var i = 0; i < devices.length; ++i) {
-      if (devices[i] instanceof PositionSensorVRDevice &&
+      if (devices[i] instanceof PoseSensorVRDevice &&
           devices[i].hardwareUnitId == gHMD.hardwareUnitId)) {
-        gPositionSensor = devices[i];
+        gPoseSensor = devices[i];
         break;
       }
     }
